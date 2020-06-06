@@ -81,6 +81,11 @@
   search.addEventListener('input', debounce(onSearch, 500))
 
   function onSearch(e) {
+    if (e.target.value === '') {
+      cl.update(rows)
+      return
+    }
+
     let {items} = sifter.search(e.target.value, {
       fields: ['title', 'author'],
       limit: 300
