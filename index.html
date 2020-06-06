@@ -60,12 +60,8 @@
 
       rows = data.map(
         ([author, id, title, chars, letters, words]) =>
-          `<tr><td>${author}</td><td><a href="https://gutenberg.org/ebooks/${
-            id.split('-')[0]
-          }" target="_blank">${title}</a></td><td>${chars}</td><td>${letters}</td><td>${words}</td></tr>`
+          `<tr><td>${author}</td><td><a href="https://gutenberg.org/ebooks/${id}" target="_blank">${title}</a></td><td>${chars}</td><td>${letters}</td><td>${words}</td></tr>`
       )
-
-      console.log(rows.length)
 
       cl = new Clusterize({
         rows: rows,
