@@ -9,7 +9,7 @@ cd ..
 make
 ```
 
-This will give you the files `data.json` and `data.json.br` (brotli-compressed because otherwise it would be too big, if you don't have brotli installed it will fail but you can still use `data.json` directly), to load the non-brotli version from `index.html` change the extension there.
+After about 60 hours this will give you the files `data.json` and `data.json.br` (brotli-compressed because otherwise it would be too big, if you don't have brotli installed it will fail but you can still use `data.json` directly), to load the non-brotli version from `index.html` change the extension there.
 
 This uses [sifter](https://www.npmjs.com/package/sifter) and [clusterize](https://clusterize.js.org/) and is being served on https://alhur.es/books/ with [Caddy](https://caddyserver.com/) and the following `Caddyfile` snippet (very hacky way of serving brotli stuff):
 
