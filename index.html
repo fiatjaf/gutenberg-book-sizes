@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+
+<meta charset="utf-8" />
+<title>all the books with their sizes</title>
+<meta
+  name="description"
+  content="this may be a little heavy, because it contains data on all books in English from the Gutenberg project: author, title, number of characters, number of letters, number of words, in a sortable table you can use to find things."
+/>
+<link
+  href="https://unpkg.com/clusterize.js@0.18.1/clusterize.css"
+  rel="stylesheet"
+/>
+<style>
+  body,
+  html {
+    margin: 0;
+    padding: 0;
+  }
+  #scrollArea {
+    width: 95vw;
+    margin: auto;
+    max-height: 95vh;
+  }
+  #search {
+    width: 95vw;
+    margin: auto;
+    display: block;
+  }
+</style>
+
+<input id="search" />
+<div id="scrollArea" class="clusterize-scroll">
+  <table>
+    <tbody id="contentArea" class="clusterize-content">
+      <tr class="clusterize-no-data">
+        <td>Loading data…</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<script src="https://unpkg.com/clusterize.js@0.18.0/clusterize.min.js"></script>
+<script src="https://unpkg.com/sifter@0.5.4/sifter.min.js"></script>
+<script>
+  search.value = 'loading...'
+  var sifter
+  var cl
+  var rows
+
+  fetch('data.json.br', {'Accept-Encoding': 'br'})
+    .then(r => r.json())
+    .then(data => {
+      search.value = ''
+
+      sifter = new Sifter(data.map(([author, _, title]) => ({author, title})))
+
+      rows = data.map(
+        ([author, id, title, chars, letters, words]) =>
+          `<tr><td>${author}</td><td><a href="https://gutenberg.org/ebooks/${
+            id.split('-')[0]
+          }" target="_blank">${title}</a></td><td>${chars}</td><td>${letters}</td><td>${words}</td></tr>`
+      )
+
+      console.log(rows.length)
+
+      cl = new Clusterize({
+        rows: rows,
+        scrollId: 'scrollArea',
+        contentId: 'contentArea'
+      })
+    })
+    .catch(err => {
+      search.value = 'error: ' + err.message
+      throw err
+    })
+
+  search.addEventListener('input', debounce(onSearch, 500))
+
+  function onSearch(e) {
+    let {items} = sifter.search(e.target.value, {
+      fields: ['title', 'author'],
+      limit: 300
+    })
+    cl.update(items.map(({id}) => rows[id]))
+  }
+
+  function debounce(func, wait, immediate) {
+    var timeout, args, context, timestamp, result
+    if (null == wait) wait = 100
+
+    function later() {
+      var last = Date.now() - timestamp
+
+      if (last < wait && last >= 0) {
+        timeout = setTimeout(later, wait - last)
+      } else {
+        timeout = null
+        if (!immediate) {
+          result = func.apply(context, args)
+          context = args = null
+        }
+      }
+    }
+
+    var debounced = function() {
+      context = this
+      args = arguments
+      timestamp = Date.now()
+      var callNow = immediate && !timeout
+      if (!timeout) timeout = setTimeout(later, wait)
+      if (callNow) {
+        result = func.apply(context, args)
+        context = args = null
+      }
+
+      return result
+    }
+
+    debounced.clear = function() {
+      if (timeout) {
+        clearTimeout(timeout)
+        timeout = null
+      }
+    }
+
+    debounced.flush = function() {
+      if (timeout) {
+        result = func.apply(context, args)
+        context = args = null
+
+        clearTimeout(timeout)
+        timeout = null
+      }
+    }
+
+    return debounced
+  }
+</script>
