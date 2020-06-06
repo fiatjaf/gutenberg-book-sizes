@@ -60,7 +60,11 @@
 
       rows = data.map(
         ([author, id, title, chars, letters, words]) =>
-          `<tr><td>${author}</td><td><a href="https://gutenberg.org/ebooks/${id}" target="_blank">${title}</a></td><td>${chars}</td><td>${letters}</td><td>${words}</td></tr>`
+          `<tr><td>${author}</td><td><a href="https://gutenberg.org/ebooks/${id}" target="_blank">${title}</a></td><td>${k(
+            chars
+          )} chars</td><td>${k(letters)} letters</td><td>${k(
+            words
+          )} words</td></tr>`
       )
 
       cl = new Clusterize({
@@ -114,5 +118,12 @@
     }
 
     return debounced
+  }
+
+  function k(int) {
+    if (int > 1000) {
+      return parseInt(int / 1000) + 'k'
+    }
+    return int
   }
 </script>
