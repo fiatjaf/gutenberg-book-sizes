@@ -30,41 +30,66 @@
     margin: auto;
     display: block;
   }
+  table {
+    width: 100%;
+  }
+  tr:hover {
+    background-color: #e6e1e1;
+  }
+  tr td:nth-child(n + 3) {
+    width: 76px;
+    text-align: right;
+    font-family: monospace;
+    padding: 3px;
+    color: white;
+  }
 </style>
 
 <input id="search" />
 <div id="scrollArea" class="clusterize-scroll">
   <table>
-    <tbody id="contentArea" class="clusterize-content">
-      <tr class="clusterize-no-data">
-        <td>Loading data…</td>
-      </tr>
-    </tbody>
+    <tbody id="contentArea" class="clusterize-content"></tbody>
   </table>
 </div>
 
 <script src="https://unpkg.com/clusterize.js@0.18.0/clusterize.min.js"></script>
 <script src="https://unpkg.com/sifter@0.5.4/sifter.min.js"></script>
+<script src="https://d3js.org/d3-array.v2.min.js"></script>
+<script src="https://d3js.org/d3-color.v1.min.js"></script>
+<script src="https://d3js.org/d3-format.v1.min.js"></script>
+<script src="https://d3js.org/d3-interpolate.v1.min.js"></script>
+<script src="https://d3js.org/d3-scale.v3.min.js"></script>
 <script>
   search.value = 'loading...'
   var sifter
   var cl
   var rows
+  var data
+
+  const colors = ['#871616', '#78E8A6']
+  const sChar = d3.scaleLog([18213779, 578], colors)
+  const sLetter = d3.scaleLog([14830704, 448], colors)
+  const sWord = d3.scaleLog([6202227, 88], colors)
 
   fetch('data.json.br', {'Accept-Encoding': 'br'})
     .then(r => r.json())
-    .then(data => {
+    .then(d => {
+      data = d
       search.value = ''
 
-      sifter = new Sifter(data.map(([author, _, title]) => ({author, title})))
+      sifter = new Sifter(
+        data.map(([author, _, title, chars]) => ({author, title, chars}))
+      )
 
       rows = data.map(
         ([author, id, title, chars, letters, words]) =>
-          `<tr><td>${author}</td><td><a href="https://gutenberg.org/ebooks/${id}" target="_blank">${title}</a></td><td>${k(
+          `<tr><td>${author}</td><td><a href="https://gutenberg.org/ebooks/${id}" target="_blank">${title}</a></td><td style="background-color: ${sChar(
             chars
-          )} chars</td><td>${k(letters)} letters</td><td>${k(
+          )}">${k(chars)} c.</td><td style="background-color: ${sLetter(
+            letters
+          )}">${k(letters)} l.</td><td style="background-color: ${sWord(
             words
-          )} words</td></tr>`
+          )}">${k(words)} w.</td></tr>`
       )
 
       cl = new Clusterize({
@@ -87,9 +112,10 @@
     }
 
     let {items} = sifter.search(e.target.value, {
-      fields: ['title', 'author'],
-      limit: 300
+      fields: ['title', 'author', 'chars'],
+      limit: 150
     })
+
     cl.update(items.map(({id}) => rows[id]))
   }
 
